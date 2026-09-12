@@ -1,6 +1,6 @@
 using System.Text;
-using YWML.Src.ConfigManager;
-using YWML.Src.Utils.GeneralUtils;
+using Avalonia;
+
 namespace YWML.Src
 {
     internal static class Program
@@ -8,32 +8,21 @@ namespace YWML.Src
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
-        [STAThread]
-        static void Main()
+        public static void Main(string[] args)
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            CConfigManager.Initialize();
-            
-            //New user
-            if(!Directory.Exists(CGeneralUtils.YWMLDataDir))
-            {
-                CConfigManager.Cfg.IsUpdateFirstBoot = false;
-                CConfigManager.UpdateConfig();
-            }
-            //Old user who updated
-            if(CConfigManager.Cfg.IsUpdateFirstBoot)
-            {
-                MessageBox.Show("YWML 1.1 introduced a restructure to the extension library, which means it unfortunately has to erase all previously installed extensions from your computer.\nDon't worry, you can reinstall all the extensions from the new and improved extension library!");
-                Directory.Delete(CGeneralUtils.YWMLDataDir,true);
-                CConfigManager.Cfg.IsUpdateFirstBoot = false;
-                CConfigManager.UpdateConfig();
-            }
-
-            Directory.CreateDirectory(CGeneralUtils.YWMLDataDir);
+            // Needed by the Level-5 archive code for the legacy Shift-JIS / CP1252 code pages.
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            Application.Run(new MainForm());
+
+            // The first boot / config bootstrap that used to live here now runs from
+            // MainWindow.OnOpened, because Avalonia dialogs need a running UI thread.
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
+
+        // Avalonia configuration, don't remove; also used by the visual designer.
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace();
     }
 }

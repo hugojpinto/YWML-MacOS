@@ -1,0 +1,92 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:YWML.Src.Views"
+        x:Class="YWML.Src.Views.LoadWindow"
+        x:DataType="vm:LoadWindow"
+        Title="Load mods"
+        Width="720"
+        Height="660"
+        MinWidth="640"
+        MinHeight="620"
+        Icon="/Assets/ywmlLogo.png"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto" Margin="20">
+
+        <TextBlock Grid.Row="0"
+                   Text="LOAD MODS"
+                   FontFamily="Menlo,Consolas,monospace"
+                   FontSize="26"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,14" />
+
+        <!-- Target game -->
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" Spacing="4" Margin="0,0,0,12">
+            <TextBlock Text="Target game" FontWeight="Bold" HorizontalAlignment="Center" />
+            <ComboBox x:Name="ExtensionComboBox" Width="300" SelectionChanged="ExtensionComboBox_SelectionChanged" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="2"
+                   x:Name="AutogenerateWarningLabel"
+                   FontFamily="Menlo,Consolas,monospace"
+                   FontStyle="Italic"
+                   FontSize="11"
+                   TextAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,12"
+                   Text="If you want YWML to automatically detect your mod installation directory,&#x0a;Choose your emulator, or if you are on a modded 3DS, select &quot;Modded3DS&quot;&#x0a;and click &quot;Generate installation dir&quot;" />
+
+        <!-- Platform -->
+        <StackPanel Grid.Row="3" HorizontalAlignment="Center" Spacing="6" Margin="0,0,0,14">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <TextBlock Text="Platform/Emulator" FontWeight="Bold" VerticalAlignment="Center" />
+                <ComboBox x:Name="PlatComboBox" Width="260" />
+            </StackPanel>
+            <Button x:Name="GenModDirBtn"
+                    Content="Generate installation dir"
+                    Width="240"
+                    Height="30"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Center"
+                    Click="GenModDirBtn_Click" />
+        </StackPanel>
+
+        <!-- Install dir -->
+        <StackPanel Grid.Row="4" HorizontalAlignment="Center" Spacing="4" Margin="0,0,0,14">
+            <TextBlock Text="Mod installation directory" FontWeight="Bold" HorizontalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBox x:Name="ModInstallPathTextBox" Width="420" IsReadOnly="True" />
+                <Button x:Name="BrowseBtn" Content="..." Width="36" FontWeight="Bold" Click="BrowseBtn_Click" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Mod list -->
+        <ListBox Grid.Row="5"
+                 x:Name="ModsListBox"
+                 ItemsSource="{Binding Mods}"
+                 MinHeight="180"
+                 Margin="0,0,0,10">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CModListEntry">
+                    <TextBlock Text="{Binding Name}" ToolTip.Tip="{Binding Details}" FontWeight="Bold" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,0,0,10">
+            <Button x:Name="MoveDownSelectedModBtn" Content="Move down selected" Width="155" Height="30" FontWeight="Bold" Click="MoveDownSelectedModBtn_Click" />
+            <Button x:Name="MoveUpSelectedModBtn" Content="Move up selected" Width="155" Height="30" FontWeight="Bold" Click="MoveUpSelectedModBtn_Click" />
+            <Button x:Name="RemoveSelectedModBtn" Content="Remove selected" Width="155" Height="30" FontWeight="Bold" Click="RemoveSelectedModBtn_Click" />
+            <Button x:Name="AddModBtn" Content="Add mod" Width="120" Height="30" FontWeight="Bold" Click="AddModBtn_Click" />
+        </StackPanel>
+
+        <Button Grid.Row="7"
+                x:Name="InstallBtn"
+                Content="Install listed mods"
+                Width="240"
+                Height="32"
+                FontWeight="Bold"
+                HorizontalAlignment="Center"
+                Click="InstallBtn_Click" />
+    </Grid>
+</Window>

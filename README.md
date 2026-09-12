@@ -1,103 +1,109 @@
-![logo](https://i.imgur.com/8KkfMAj.png)
+# YWML (macOS / cross-platform port)
 
-# YWML
+An **unofficial macOS and cross-platform port of [SuperTavor/YWML](https://github.com/SuperTavor/YWML)**, the mod
+loader for the **Yo-kai Watch** series on 3DS.
 
-**YWML** is an easy, fun, and efficient mod loader for the **Yo-kai Watch** series on 3DS!  
+Upstream is a .NET 8 **Windows Forms** app. This fork keeps all of the archive, merge and extension-library logic
+byte-for-byte identical and replaces only the UI layer with [Avalonia](https://avaloniaui.net), so the same app runs
+on macOS, Linux and Windows.
 
-Instead of distributing the entire game assets archive, you can simply publish only the files you edited and let your users install them with YWML's intelligent mod layering system.  
+For how to actually *use* the app (extension library, loading mods, migrating an existing FA mod, making a YWML mod
+from scratch) see the [upstream README](https://github.com/SuperTavor/YWML#readme) — the workflow and all the windows
+are unchanged.
 
+## Requirements
 
-<a href="https://github.com/supertavor/ywml/releases/latest" target="_blank">
-  <img alt="Download YWML" src="https://img.shields.io/badge/Download-YWML-blue?style=for-the-badge&logo=github" width="300">
-</a>
+* .NET SDK 8.0 or newer (`dotnet --version`)
+  * macOS: `brew install --cask dotnet-sdk` (needs sudo), or the no-sudo option
+    `curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 8.0`, which installs into `~/.dotnet`.
+    With that option the SDK is not on `PATH`, so add this to your shell profile (or prefix the commands below):
 
+    ```sh
+    export DOTNET_ROOT="$HOME/.dotnet"
+    export PATH="$DOTNET_ROOT:$PATH"
+    ```
 
+## Build and run
 
-------------------
-
-## 🎮 How to Load a Mod with YWML
-
-### **Step 1: Download the appropriate extension**
-- Open the extension library and select the correct region for your game.  
-- This ensures autoinstallation works correctly.  
-
-![The extension library window](https://i.imgur.com/5UMZXN8.png)
-
-### **Step 2: Select your target game**
-- In the main menu, click **Load** and choose the appropriate game extension you downloaded.  
-
-![TargetGame](https://i.imgur.com/qYaT25q.png)
-
-### **Step 3: Generate your installation directory**
-**For 3DS with microSD inserted:**
-1. Select **Modded3DS** in the Platform/Emulator dropbox and click **Generate installation dir**.  
-2. Select your microSD drive (e.g., `D:/`) and click **Select**.  
-
-**For emulators:**
-1. Select your emulator from the Platform/Emulator dropbox.  
-2. Click **Generate installation dir**.  
-
-✅ Your mod installation directory field should now be filled automatically.
-
-### **Step 4: Add and install your mod**
-1. Click **Add mod** and select your mod folder.  
-
-![mod](https://i.imgur.com/ca9EuZK.png)
-
-2. Click **Install selected mods** to install all mods in the list.  
-
-![mod](https://i.imgur.com/OoTnOET.png)
-
-🎉 **You're done! Enjoy!**  
-
----
-
-## 🛠 How to Make Your Mod Compatible with YWML
-
-### **Option 1: Migrate an existing FA mod**
-1. Go to the YWML main menu and click **Migrate old mod**.  
-2. Fill out mod information (Name, Author, Version).  
-
-![migrate info](https://i.imgur.com/WqveTpz.png)
-
-3. Select your mod folder.  
-
-![select folder](https://i.imgur.com/fZNmVnk.png)  
-*Ensure your folder matches the structure in the screenshot.*
-
-4. Select your **unmodified RomFS folder** (usually the original dumped RomFS from your game).  
-   - To dump RomFS: open your 3DS emulator, right-click your game, and select **Dump RomFS**.  
-   - After dumping, select the folder that matches your mod folder's structure.  
-
-![dump romfs](https://i.imgur.com/9OPGoov.png)
-
-5. Click **Migrate** and select the folder where you want the YWML mod to be saved.
-
----
-
-### **Option 2: Create a YWML mod from scratch**
-
-1. Sort your mod files in a loose fashion inside an include folder. For example, if I edited data/menu/title_screen.xa, This is how my folder structure will look:
-```
--MyMod
-    -include
-        -data
-            -menu
-                -title_screen.xa
-```
-3. Right outside of the include folder, create a file called ywml.json and paste the following into it:
-```json
-{
-    "Name": "Your mod's name",
-    "Author": "Your name",
-    "Version": "Your mod's version"
-}
+```sh
+dotnet build            # or: dotnet build -c Release
+dotnet run
 ```
 
-Fill out all of the fields! *But wait, what if you edited files that are already loose, like files in mov or snd? Well, it's super simple to integrate! Simply paste your mov and snd folders, for example, right outside the include folder!*
+To produce a standalone binary:
 
-✅ **Your mod is now ready to load with YWML!**
+```sh
+dotnet publish -c Release -r osx-arm64 --self-contained false
+```
 
----
+Per-user data (config, downloaded extensions, cached library) lives in:
 
-### ⭐ Happy Mod Loading!
+| OS      | Path                                    |
+| ------- | --------------------------------------- |
+| macOS   | `~/Library/Application Support/YWML`    |
+| Windows | `%APPDATA%\YWML`                        |
+| Linux   | `$XDG_CONFIG_HOME/YWML` or `~/.config/YWML` |
+
+## What changed versus upstream
+
+### UI
+
+* **Windows Forms → Avalonia 11.** The four forms were rewritten as Avalonia windows with the same controls,
+  labels and behaviour:
+  * `MainForm` → `Src/Views/MainWindow.axaml`
+  * `LoadForm` → `Src/Views/LoadWindow.axaml`
+  * `ExtensionLibraryForm` → `Src/Views/ExtensionLibraryWindow.axaml`
+  * `MigrateModForm` → `Src/Views/MigrateModWindow.axaml`
+* The loader's mod list was a `TreeView` with flat nodes; it is now a `ListBox` (same ordering semantics: top of the
+  list is the most important mod). The extension library keeps a real `TreeView` (categories → extensions).
+* `FolderBrowserDialog` → Avalonia's `StorageProvider.OpenFolderPickerAsync`.
+* The ~27 `MessageBox.Show` calls go through `Src/Utils/Dialogs/CDialogs.cs`, backed by a small
+  `MessageBoxWindow`. Avalonia has no blocking modal dialog, so these are **async**; call sites were awaited
+  accordingly (`CConfigManager.InitializeAsync`, `CExtensionLibrary.FetchDataAsync` / `LoadInstalledListAsync`).
+* Layout uses Avalonia panels rather than the designer's absolute pixel coordinates, and the Windows-only fonts
+  (Yu Gothic UI, Arial Rounded MT, Consolas) fall back to the platform default / `Menlo`.
+
+### De-Windows-ing
+
+* `CGeneralUtils.YWMLDataDir` used `%APPDATA%/YWML`; it now uses
+  `Environment.GetFolderPath(SpecialFolder.ApplicationData)` so it resolves correctly on every OS.
+* `LoadForm.genModDirBtn_Click` hardcoded `C:/Users/{user}/AppData/Roaming/{platform}/load/mods/{titleId}`.
+  `Src/Utils/Platform/CPlatformUtils.cs` now builds that per OS — `~/Library/Application Support/{Platform}/...`
+  on macOS, `$XDG_DATA_HOME`/`~/.local/share/{platform}/...` on Linux, the original path on Windows. The
+  Modded3DS branch (user picks the SD card root, `/Volumes/...` on macOS) is unchanged apart from stripping
+  either kind of trailing separator.
+* `CLoader.ModifyFA` filtered raw files with `file.Contains("include\\")`, which never matched on macOS and
+  would have copied the whole `include` tree as loose files. It now compares the first path segment relative to
+  the mod folder, separator-agnostically.
+* `VirtualDirectory.Reorganize` built virtual archive paths with a literal `\` (via `Path.Combine`) and then
+  replaced them with `/`. It now uses `/` directly — identical behaviour, but correct on non-Windows.
+* `MainForm.configOpenBtn_Click` launched `explorer.exe /select`. Now `open -R` on macOS, `explorer /select` on
+  Windows, `xdg-open` of the containing directory on Linux.
+* Removed the unused `AllocConsole` `kernel32.dll` `DllImport` from `MigrateModForm` (commented-out debugging).
+* Removed the `[STAThread]` / `ApplicationConfiguration.Initialize()` / `Application.Run` entry point in favour of
+  the Avalonia `AppBuilder`. `Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)` is kept, and the
+  first-boot / config bootstrap moved from `Program.Main` to `MainWindow.Opened` (unchanged logic) because
+  Avalonia dialogs need a running UI thread.
+* `System.Windows.Forms.Timer` → `Avalonia.Threading.DispatcherTimer`.
+
+### Non-UI code that had to move
+
+The archive/merge logic is untouched, but three APIs took WinForms types and were refactored to plain data:
+
+* `CLoader.ModifyFA(TreeView, ...)` → `CLoader.ModifyFA(IEnumerable<string> modNamesMostImportantFirst, ...)`.
+* `CExtension.InstallAsync/UninstallAsync(List<Button>, Label, Label, ...)` →
+  `(Action<bool> setBusy, IProgress<string> status, IProgress<string> percentage, ...)`.
+  `Progress<T>` captures the UI `SynchronizationContext`, replacing the old `Label.Invoke` marshalling.
+* `CFAMerger.GetDiffs()` showed its own message box on an FA mismatch; it now just returns `1` and the window
+  shows `CFAMerger.FA_MISMATCH_MESSAGE`, so the merge runs UI-free on a background thread.
+
+### Small fixes
+
+* Guarded the loader's "remember install directory per game" handler against a null selection (upstream threw).
+* Cancelling the output-folder picker in the migrate window no longer proceeds with an empty path.
+* `CExtension.UninstallAsync` no longer throws if the extension directory is already gone.
+
+## Credits
+
+All credit for YWML itself goes to [SuperTavor](https://github.com/SuperTavor) and contributors; the bundled
+Level-5 archive library under `Src/Utils/Tinifan` is Tinifan's.

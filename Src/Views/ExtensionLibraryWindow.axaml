@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:YWML.Src.Views"
+        x:Class="YWML.Src.Views.ExtensionLibraryWindow"
+        x:DataType="vm:ExtensionLibraryWindow"
+        Title="YWML Extension Library"
+        Width="520"
+        Height="450"
+        MinWidth="480"
+        MinHeight="400"
+        Icon="/Assets/ywmlLogo.png"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="16">
+
+        <TextBlock Grid.Row="0"
+                   Text="EXTENSIONS"
+                   FontFamily="Menlo,Consolas,monospace"
+                   FontSize="26"
+                   HorizontalAlignment="Center"
+                   Margin="0,4,0,14" />
+
+        <TreeView Grid.Row="1"
+                  x:Name="ExtensionsTreeView"
+                  ItemsSource="{Binding Nodes}"
+                  SelectionChanged="ExtensionsTreeView_SelectionChanged">
+            <TreeView.ItemTemplate>
+                <TreeDataTemplate x:DataType="vm:CExtensionTreeNode" ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding Text}" FontWeight="Bold" />
+                </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,12,0,8">
+            <Button x:Name="InstallBtn" Content="Install selected extension" Width="220" Height="30" FontWeight="Bold" Click="InstallBtn_Click" />
+            <Button x:Name="UninstallBtn" Content="Uninstall selected extension" Width="220" Height="30" FontWeight="Bold" Click="UninstallBtn_Click" />
+        </StackPanel>
+
+        <Grid Grid.Row="3" ColumnDefinitions="Auto,*">
+            <Button Grid.Column="0" x:Name="ExitBtn" Content="Exit" Width="60" Height="30" FontWeight="Bold" Click="ExitBtn_Click" />
+            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                <TextBlock x:Name="StatusLabel" Text="Status will be displayed here." FontWeight="Bold" />
+                <TextBlock x:Name="PercentageLabel" Text="0%" FontWeight="Bold" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

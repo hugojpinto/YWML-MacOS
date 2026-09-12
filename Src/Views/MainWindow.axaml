@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="YWML.Src.Views.MainWindow"
+        Title="YWML"
+        Width="400"
+        Height="330"
+        CanResize="False"
+        Icon="/Assets/ywmlLogo.png"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="16">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+            <TextBlock Text="YWML"
+                       FontFamily="Menlo,Consolas,monospace"
+                       FontSize="48"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,18" />
+
+            <Button x:Name="LoadButton" Content="Load" Width="190" Height="32" FontWeight="Bold" Click="LoadButton_Click" />
+            <Button x:Name="ExtLibButton" Content="Extension library" Width="190" Height="32" FontWeight="Bold" Click="ExtLibButton_Click" />
+            <Button x:Name="ConfigOpenButton" Content="Locate config file" Width="190" Height="32" FontWeight="Bold" Click="ConfigOpenButton_Click" />
+            <Button x:Name="MigrateButton" Content="Migrate old mod" Width="190" Height="32" FontWeight="Bold" Click="MigrateButton_Click" />
+        </StackPanel>
+
+        <TextBlock x:Name="VerLabel"
+                   Text="ver"
+                   FontFamily="Menlo,Consolas,monospace"
+                   FontStyle="Italic"
+                   FontSize="12"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Bottom" />
+    </Grid>
+</Window>

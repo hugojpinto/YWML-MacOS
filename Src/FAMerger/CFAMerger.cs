@@ -3,8 +3,12 @@ using YWML.Src.Utils.Tinifan.ArchiveL5.Level5.Archive.ARC0;
 
 namespace YWML.Src.FAMerger
 {
-    internal class CFAMerger
+    public class CFAMerger
     {
+        public const string FA_MISMATCH_MESSAGE =
+            "The .FA files in the mod folder and the original RomFS folder do not match.\n" +
+            "Please make sure the original RomFS has all the FA files the mod uses.";
+
         private string _modPath { get; set; }
         private string _romfsPath { get; set; }
         public ARC0[] ModFAHandles { get; set; }
@@ -33,11 +37,10 @@ namespace YWML.Src.FAMerger
 
             var romfsSet = new HashSet<string>(romfsFaFiles);
 
+            // The caller is responsible for reporting this to the user (return code 1); the merge
+            // logic itself is UI free so it can run on a background thread.
             if (!modFaFiles.All(f => romfsSet.Contains(f)))
             {
-                MessageBox.Show(
-                    "The .FA files in the mod folder and the original RomFS folder do not match.\n" +
-                    "Please make sure the original RomFS has all the FA files the mod uses.");
                 return 1;
             }
 

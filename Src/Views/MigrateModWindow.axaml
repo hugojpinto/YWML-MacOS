@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="YWML.Src.Views.MigrateModWindow"
+        Title="Migrate mod"
+        Width="500"
+        Height="600"
+        MinWidth="460"
+        MinHeight="560"
+        Icon="/Assets/ywmlLogo.png"
+        WindowStartupLocation="CenterOwner">
+
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="6">
+
+            <TextBlock Text="MIGRATE AN EXISTING FA MOD"
+                       FontFamily="Menlo,Consolas,monospace"
+                       FontSize="19"
+                       HorizontalAlignment="Center"
+                       Margin="0,4,0,14" />
+
+            <TextBlock Text="Add Mod Details" FontWeight="Bold" FontSize="15" />
+            <TextBlock Text="Can be anything - just how it'll appear in the YWML loader"
+                       FontFamily="Menlo,Consolas,monospace" FontStyle="Italic" FontSize="11" />
+
+            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto" Margin="0,6,0,0">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Mod name" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
+                <TextBox Grid.Row="0" Grid.Column="1" x:Name="ModNameTextBox" Margin="0,2" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Mod author" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
+                <TextBox Grid.Row="1" Grid.Column="1" x:Name="ModAuthorTextBox" Margin="0,2" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Mod version" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="ModVersionTextBox" Margin="0,2" />
+            </Grid>
+
+            <TextBlock Text="Choose a folder with ONLY the mod you want to convert."
+                       FontWeight="Bold" FontSize="15" Margin="0,16,0,0" />
+            <TextBlock FontFamily="Menlo,Consolas,monospace" FontStyle="Italic" FontSize="11"
+                       Text="The folder should be structured like this:&#x0a;-mov (If used, if not in the mod you want to migrate, ignore)&#x0a;-snd (If used, if not in the mod you want to migrate, ignore)&#x0a;-.FA files" />
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,6,0,0">
+                <Button x:Name="ChooseModBtn" Content="Choose" Width="120" Height="32" FontWeight="Bold" Click="ChooseModBtn_Click" />
+                <TextBlock x:Name="ModSelectedLbl" Text="____ selected."
+                           FontFamily="Menlo,Consolas,monospace" FontStyle="Italic" FontSize="11"
+                           VerticalAlignment="Center" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <TextBlock Text="Choose the game's UNMODIFIED RomFS folder"
+                       FontWeight="Bold" FontSize="15" Margin="0,16,0,0" />
+            <TextBlock FontFamily="Menlo,Consolas,monospace" FontStyle="Italic" FontSize="11"
+                       Text="You can dump the game's RomFS through Citra or a modded 3DS.&#x0a;Make sure you are using the SAME REGION as the mod&#x0a;(If the mod is meant for EUR, use EUR, etc)" />
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,6,0,0">
+                <Button x:Name="ChooseRomfsBtn" Content="Choose" Width="120" Height="32" FontWeight="Bold" Click="ChooseRomfsBtn_Click" />
+                <TextBlock x:Name="OgRomfsLabel" Text="____ selected."
+                           FontFamily="Menlo,Consolas,monospace" FontStyle="Italic" FontSize="11"
+                           VerticalAlignment="Center" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Button x:Name="MigrateBtn" Content="Migrate" Height="32" FontWeight="Bold"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Margin="0,18,0,0" Click="MigrateBtn_Click" />
+
+            <TextBlock x:Name="StatusLabel" Text="Status: Waiting on user" FontWeight="Bold" FontSize="12" Margin="0,8,0,0" />
+            <TextBlock x:Name="TimeElapsedLabel" Text="Time elapsed: None" FontWeight="Bold" FontSize="12" />
+        </StackPanel>
+    </ScrollViewer>
+</Window>

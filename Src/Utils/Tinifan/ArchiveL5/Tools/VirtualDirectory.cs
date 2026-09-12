@@ -413,10 +413,11 @@ namespace YWML.Src.Utils.Tinifan.ArchiveL5.Tools
 
                 foreach (var folderName in pathSplit)
                 {
-                    currentPath = Path.Combine(currentPath, folderName) + "\\";
-                    if (currentPath.Count(c => c == '\\') > 1 && GetFolder(currentPath.Replace("\\", "/")) == null)
+                    // Virtual archive paths always use '/' regardless of the host OS.
+                    currentPath = currentPath + folderName + "/";
+                    if (currentPath.Count(c => c == '/') > 1 && GetFolder(currentPath) == null)
                     {
-                        AddFolder(currentPath.Replace("\\", "/"));
+                        AddFolder(currentPath);
                     }
                 }
             }

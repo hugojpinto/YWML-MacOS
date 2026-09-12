@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using YWML.Src.ConfigManager;
 using YWML.Src.ExtensionLibrary.DataClasses;
+using YWML.Src.Utils.Dialogs;
 using YWML.Src.Utils.GeneralUtils;
 
 namespace YWML.Src.ExtensionLibrary
@@ -11,7 +12,7 @@ namespace YWML.Src.ExtensionLibrary
         //string is id
         public Dictionary<string, CExtensionLibraryItem> InstalledList = new();
 
-        public void LoadInstalledList()
+        public async Task LoadInstalledListAsync()
         {
             string installedListJson = string.Empty;
             if (File.Exists(CGeneralUtils.ExtensionInstalledList))
@@ -27,17 +28,18 @@ namespace YWML.Src.ExtensionLibrary
                 }
                 catch
                 {
-                    MessageBox.Show("Invalid installed list. Resetting");
+                    await CDialogs.ShowMessageAsync("Invalid installed list. Resetting");
                     InstalledList = new();
                 }
                 if (InstalledList == null)
                 {
-                    MessageBox.Show("Invalid installed list. Resetting");
+                    await CDialogs.ShowMessageAsync("Invalid installed list. Resetting");
                     InstalledList = new();
                 }
             }
         }
-        public void FetchData()
+
+        public async Task FetchDataAsync()
         {
             bool useCache = false;
             string extensionLibraryJson = string.Empty;
@@ -49,22 +51,23 @@ namespace YWML.Src.ExtensionLibrary
             };
             try
             {
-                extensionLibraryJson = client.GetStringAsync(string.Empty).Result;
+                extensionLibraryJson = await client.GetStringAsync(string.Empty);
+                Directory.CreateDirectory(Path.GetDirectoryName(cachePath)!);
                 File.WriteAllText(cachePath, extensionLibraryJson);
             }
             catch
             {
-                var result = MessageBox.Show("An error occurred while fetching the latest extension library. Would you like to try using a cached extension library (It may be missing new extension or even straight up including broken links)?","Error",MessageBoxButtons.YesNo);
-                if(result == DialogResult.Yes)
+                var result = await CDialogs.ShowYesNoAsync("An error occurred while fetching the latest extension library. Would you like to try using a cached extension library (It may be missing new extension or even straight up including broken links)?", "Error");
+                if (result)
                 {
-                    if(File.Exists(cachePath))
+                    if (File.Exists(cachePath))
                     {
-                        MessageBox.Show("Cache available. Loading now");
+                        await CDialogs.ShowMessageAsync("Cache available. Loading now");
                         useCache = true;
                     }
                     else
                     {
-                        MessageBox.Show("Sorry, there isn't a previously cached version of the extension library on this device.");
+                        await CDialogs.ShowMessageAsync("Sorry, there isn't a previously cached version of the extension library on this device.");
                         throw new HttpRequestException();
                     }
                 }
@@ -73,12 +76,12 @@ namespace YWML.Src.ExtensionLibrary
                     throw new HttpRequestException();
                 }
             }
-            
-            if(useCache)
+
+            if (useCache)
             {
                 extensionLibraryJson = File.ReadAllText(cachePath);
             }
-            ExtensionInfo = JsonConvert.DeserializeObject<CExtensionLibInfo>(extensionLibraryJson);
+            ExtensionInfo = JsonConvert.DeserializeObject<CExtensionLibInfo>(extensionLibraryJson)!;
         }
     }
 }

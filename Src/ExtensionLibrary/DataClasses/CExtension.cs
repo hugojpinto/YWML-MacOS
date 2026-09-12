@@ -1,13 +1,12 @@
-﻿using Newtonsoft.Json;
 using YWML.Src.Utils.GeneralUtils;
-using static YWML.Src.ExtensionLibrary.CExtensionLibrary;
+
 namespace YWML.Src.ExtensionLibrary.DataClasses
 {
     public class CExtension
     {
-        public string Name { get; set;  }
+        public string Name { get; set; }
         //in mb
-        public int FileSize { get; set;  }
+        public int FileSize { get; set; }
 
         //Download link for the LZMA extension 
         public string Link { get; set; }
@@ -17,65 +16,60 @@ namespace YWML.Src.ExtensionLibrary.DataClasses
         public string TitleId { get; set; }
 
         //Original FA name
-        public string OgFAName { get; set;  }
+        public string OgFAName { get; set; }
 
-        public async Task UninstallAsync(List<Button> btnsToLock,Label statusLabel,Dictionary<string,CExtensionLibraryItem> installedList)
+        /// <param name="setBusy">Called with true while work is in progress, false when done (used to lock buttons).</param>
+        /// <param name="status">Receives human readable status updates.</param>
+        public Task UninstallAsync(Action<bool> setBusy, IProgress<string> status, Dictionary<string, CExtensionLibraryItem> installedList)
         {
-            foreach (var button in btnsToLock)
-            {
-                button.Enabled = false;
-            }
+            setBusy(true);
             installedList.Remove(Id);
             var installDir = Path.Combine(CGeneralUtils.ExtensionInstallDirectory, Id);
-            Directory.Delete(installDir, true);
-            statusLabel.Text = "Finished uninstalling extension";
-            foreach (var button in btnsToLock)
-            {
-                button.Enabled = true;
-            }
+            if (Directory.Exists(installDir)) Directory.Delete(installDir, true);
+            status.Report("Finished uninstalling extension");
+            setBusy(false);
+            return Task.CompletedTask;
         }
-        public async Task InstallAsync(List<Button> btnsToLock, Label statusLabel,Label percentageLabel,Dictionary<string, CExtensionLibraryItem> installedList)
+
+        /// <param name="setBusy">Called with true while work is in progress, false when done (used to lock buttons).</param>
+        /// <param name="status">Receives human readable status updates.</param>
+        /// <param name="percentage">Receives download progress as a percentage string ("" when idle).</param>
+        public async Task InstallAsync(Action<bool> setBusy, IProgress<string> status, IProgress<string> percentage, Dictionary<string, CExtensionLibraryItem> installedList)
         {
-            foreach(var button in btnsToLock)
-            {
-                button.Enabled = false;
-            }
-            statusLabel.Text = "Downloading LZMA extension";
+            setBusy(true);
+            status.Report("Downloading LZMA extension");
             var compressedPath = Path.Combine(CGeneralUtils.TmpDirectory, "compressed.7z");
             Directory.CreateDirectory(CGeneralUtils.TmpDirectory);
             //Download compressed FA
-            await DownloadCompressedFAAsync(compressedPath,percentageLabel);
+            await DownloadCompressedFAAsync(compressedPath, percentage);
             //Unpack it
-            percentageLabel.Text = "";
-            statusLabel.Text = "Unpacking LZMA extension";
+            percentage.Report("");
+            status.Report("Unpacking LZMA extension");
             var decompressedBytes = await DecompressAsync(await File.ReadAllBytesAsync(compressedPath));
             //Write decompressed FA to disk
-            statusLabel.Text = "Installing unpacked extension";
+            status.Report("Installing unpacked extension");
             var unpackedFaPath = Path.Combine(Path.Combine(CGeneralUtils.ExtensionInstallDirectory, Id), "patchable.fa");
             Directory.CreateDirectory(Path.GetDirectoryName(unpackedFaPath)!);
             await File.WriteAllBytesAsync(unpackedFaPath, decompressedBytes);
             Directory.Delete(CGeneralUtils.TmpDirectory, true);
 
-          
-            if(!installedList.Keys.Contains(this.Id))
+
+            if (!installedList.Keys.Contains(this.Id))
             {
                 installedList[this.Id] = new()
                 {
-                   FAName= this.OgFAName,
-                   Name = this.Name,
-                   TitleId = this.TitleId
+                    FAName = this.OgFAName,
+                    Name = this.Name,
+                    TitleId = this.TitleId
                 };
             }
-            
+
             //Add to installed list
-            statusLabel.Text = "Finished installing extension!";
-            foreach (var button in btnsToLock)
-            {
-                button.Enabled = true;
-            }
+            status.Report("Finished installing extension!");
+            setBusy(false);
         }
 
-        private async Task DownloadCompressedFAAsync(string compressedPath,Label percentageLabel)
+        private async Task DownloadCompressedFAAsync(string compressedPath, IProgress<string> percentage)
         {
             var client = new HttpClient();
             var response = await client.GetAsync(Link, HttpCompletionOption.ResponseHeadersRead);
@@ -96,9 +90,11 @@ namespace YWML.Src.ExtensionLibrary.DataClasses
                         await fs.WriteAsync(buffer, 0, bytesRead);
                         downloadedBytes += bytesRead;
 
-                        var percentage = (int)((downloadedBytes * 100) / totalBytes);
-
-                        percentageLabel.Invoke(new Action(() => percentageLabel.Text = $"{percentage}%"));
+                        if (totalBytes > 0)
+                        {
+                            var percent = (int)((downloadedBytes * 100) / totalBytes);
+                            percentage.Report($"{percent}%");
+                        }
                     }
                 }
             }

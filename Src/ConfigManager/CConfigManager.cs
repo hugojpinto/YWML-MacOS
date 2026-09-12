@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Tomlet;
 using YWML.Src.ConfigManager.DataClasses;
+using YWML.Src.Utils.Dialogs;
 using YWML.Src.Utils.GeneralUtils;
 
 namespace YWML.Src.ConfigManager
@@ -14,11 +15,12 @@ namespace YWML.Src.ConfigManager
             string resourceName = "YWML.config.toml";
 
             var assembly = Assembly.GetExecutingAssembly();
-            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using Stream stream = assembly.GetManifestResourceStream(resourceName)!;
             using StreamReader reader = new StreamReader(stream);
             return reader.ReadToEnd();
         }
-        public static void Initialize()
+
+        public static async Task InitializeAsync()
         {
             //Deserialize 
             if (!File.Exists(CGeneralUtils.WritableConfigPath))
@@ -29,20 +31,20 @@ namespace YWML.Src.ConfigManager
 
             if (Cfg.ExtensionLibraryURL == null || Cfg.ExtensionLibraryURL == "")
             {
-                MessageBox.Show("Cannot find the extension library source URL in config.toml. Please reinstall the application or add your own source URL for custom extensions.");
+                await CDialogs.ShowMessageAsync("Cannot find the extension library source URL in config.toml. Please reinstall the application or add your own source URL for custom extensions.");
                 Environment.Exit(1);
             }
 
-            if(!(Cfg.IsUpdateFirstBoot is bool))
+            if (!(Cfg.IsUpdateFirstBoot is bool))
             {
-                MessageBox.Show("The IsUpdateFirstBoot variable in the config is corrupted. Please reinstall the app");
+                await CDialogs.ShowMessageAsync("The IsUpdateFirstBoot variable in the config is corrupted. Please reinstall the app");
                 Environment.Exit(1);
             }
         }
 
         public static void UpdateConfig()
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(CGeneralUtils.WritableConfigPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(CGeneralUtils.WritableConfigPath)!);
             File.WriteAllText(CGeneralUtils.WritableConfigPath, TomletMain.TomlStringFrom(Cfg));
         }
 
